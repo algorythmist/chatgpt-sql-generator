@@ -13,9 +13,19 @@ track: ['track_id', 'name', 'album_id', 'composer', 'milliseconds', 'bytes', 'un
     assert schema == expected
     assert isinstance(schema, str)
 
+def test_execute_sql_query():
+    engine = create_engine("sqlite:///media_store.db")
+    sql = "SELECT * FROM album"
+    df = execute_sql_query(engine, sql)
+    assert df.shape == (347, 3)
+    assert set(df.columns) == set(['album_id', 'title', 'artist'])
+
 def test_build_system_prompt():
     schema_description = "album: ['album_id', 'title', 'artist']"
-    expected = "Given the following SQL tables, your job is to write SQLite queries to answer the user’s questions.\nalbum: ['album_id', 'title', 'artist'])\n"
+    expected = """
+    Given the following SQL tables, your job is to write SQLite queries to answer the user’s questions.
+    Respond only with SQL and no additional content.\nalbum: ['album_id', 'title', 'artist']
+    """.strip()
     assert build_system_prompt(schema_description) == expected
 
 def test_user_prompt():

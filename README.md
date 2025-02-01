@@ -12,3 +12,10 @@ pip install -r requirements.txt
 python -m ipykernel install --user --name chatgpt-sql-generator --display-name "chatgpt-sql-generator"
 ```
 
+### Usage
+
+1. Open Jupyter Notebook
+2. Select the "chatgpt-sql-generator" kernel
+3. Run the cells in order
+4. Enjoy!
+

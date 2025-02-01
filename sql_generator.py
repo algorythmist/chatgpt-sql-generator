@@ -32,8 +32,11 @@ def build_system_prompt(schema_description):
     :param schema_description: the database schema as a string
     :return: the system prompt
     """
-    instructions_prompt = "Given the following SQL tables, your job is to write SQLite queries to answer the user’s questions."
-    return f'{instructions_prompt}\n{schema_description})\n'
+    instructions_prompt = """
+    Given the following SQL tables, your job is to write SQLite queries to answer the user’s questions.
+    Respond only with SQL and no additional content.
+    """.strip()
+    return f'{instructions_prompt}\n{schema_description}'
 
 
 def build_user_prompt(user_question):
@@ -84,12 +87,17 @@ def answer_user_query(engine, openai_client, user_query):
     :param engine: the sqlalchemy engine
     :param openai_client: the openai client
     :param user_query: the user query
-    :return: the results as a DataFrame
+    :return: A pair containing the sql generated and the results as a DataFrame
     """
     schema = build_schema(engine)
     system_prompt = build_system_prompt(schema)
     user_prompt = build_user_prompt(user_query)
     chat_response = call_chatgpt(openai_client, system_prompt, user_prompt)
+    print(chat_response)
     sql = extract_sql(chat_response)
-    return execute_sql_query(engine, sql)
-
+    try :
+        df = execute_sql_query(engine, sql)
+    except Exception as e:
+        print(f"Error executing SQL: {e}")
+        return sql, "The assistant could not answer your question. Please try reformulating it."
+    return sql, df
